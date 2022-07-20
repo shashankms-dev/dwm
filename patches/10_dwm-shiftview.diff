@@ -1,0 +1,46 @@
+diff -u -r dwm-6.2/config.def.h dwm-new/config.def.h
+--- dwm-6.2/config.def.h	2021-12-08 01:10:16.100848964 +0530
++++ dwm-new/config.def.h	2021-12-08 01:03:26.871233247 +0530
+@@ -86,6 +86,8 @@
+ 	{ MODKEY,                       XK_k,      focusstack,     {.i = -1 } },
+ 	{ MODKEY,                       XK_i,      incnmaster,     {.i = +1 } },
+ 	{ MODKEY,                       XK_d,      incnmaster,     {.i = -1 } },
++	{ MODKEY,                       XK_Right,  shiftview,      {.i = +1 } },
++	{ MODKEY,                       XK_Left,   shiftview,      {.i = -1 } },
+ 	{ MODKEY,                       XK_h,      setmfact,       {.f = -0.05} },
+ 	{ MODKEY,                       XK_l,      setmfact,       {.f = +0.05} },
+ 	{ MODKEY,                       XK_Return, zoom,           {0} },
+diff -u -r dwm-6.2/dwm.c dwm-new/dwm.c
+--- dwm-6.2/dwm.c	2021-12-08 01:09:21.824658148 +0530
++++ dwm-new/dwm.c	2021-12-08 01:08:04.450647486 +0530
+@@ -214,6 +214,7 @@
+ static void setmfact(const Arg *arg);
+ static void setup(void);
+ static void seturgent(Client *c, int urg);
++void shiftview(const Arg *arg);
+ static void showhide(Client *c);
+ static void sigchld(int unused);
+ static void sighup(int unused);
+@@ -1712,6 +1713,21 @@
+ }
+ 
++/* function to shift the current view to the left/right */
++void
++shiftview(const Arg *arg) {
++    Arg shifted;
++
++    if(arg->i > 0) // left circular shift
++        shifted.ui = (selmon->tagset[selmon->seltags] << arg->i)
++           | (selmon->tagset[selmon->seltags] >> (LENGTH(tags) - arg->i));
++
++    else // right circular shift
++        shifted.ui = selmon->tagset[selmon->seltags] >> (- arg->i)
++           | selmon->tagset[selmon->seltags] << (LENGTH(tags) + arg->i);
++
++    view(&shifted);
++}
++
+ void
+ showhide(Client *c)
+ {
+ 	if (!c)
